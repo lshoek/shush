@@ -25,3 +25,5 @@ build-tmp/
 web-export/
 
 *.hex
+
+shush_audio/resources/

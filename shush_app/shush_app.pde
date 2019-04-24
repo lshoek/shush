@@ -2,118 +2,132 @@ import processing.serial.*;
 import oscP5.*;
 import netP5.*;
 
-color APRICOT = #ffcdbc;
-color BLACKCORAL = #69a197;
+final color APRICOT = #ffcdbc;
+final color BLACKCORAL = #69a197;
+final color WHITE = #ffffff;
 
-int lineWeight = 8;
-int numCircles = 16;
-int numPoints = 8;
-float radius = 50;
-float pointerSize = 50;
+public final int MAX_SOURCES = 4;
 
-Serial port = null;
-int data = 0;
-boolean arduinoAvailable = false;
+App app = new App(this);
 
-OscP5 osc;
-NetAddress localhost;
-
-PVector center;
-PVector mouse;
+int clicks = 0;
 
 void setup()
 {
-    size(720, 720);
-    background(APRICOT);
-    rectMode(CENTER);
-    strokeWeight(lineWeight);
-    noCursor();
+	// settings
+	size(720, 720);
+	rectMode(CENTER);
 
-    String[] ports = Serial.list();
-    if (ports.length > 0)
-    {
-        String portname = Serial.list()[0];
-        port = new Serial(this, portname, 9600);
-        println(portname);
-    }
-    osc = new OscP5(this, 12000);
-    localhost = new NetAddress("127.0.0.1", 8000);
-
-    mouse = new PVector(mouseX, mouseY);
-    center = new PVector(width/2, height/2);
+	app.init();
 }
 
 void draw()
-{ 
-    background(APRICOT);
-
-    // update
-    arduinoAvailable = (port != null) && (port.available() > 0);
-    if (arduinoAvailable)
-    {
-        data = port.read();
-    }
-
-    center = new PVector(width/2, height/2);
-    mouse = new PVector(mouseX, mouseY);
-
-    float maxMag = sqrt(width*width + height*height)/2;
-    float minMag = maxMag/8;
-
-    mouse.sub(center);
-    if (mouse.mag() < minMag) mouse.setMag(minMag);
-    mouse.add(center);
-
-    float dist = dist(mouse.x, mouse.y, center.x, center.y);
-    dist = map(dist, 0, maxMag, 0, 1);
-
-    float angle = atan2(mouse.y-center.y, mouse.x-center.x);
-    angle = map(angle, -PI, PI, 0, 1);
-
-    // draw scene
-    pushMatrix();
-
-    strokeWeight((lineWeight/2)*(1-dist));
-    line(center.x, center.y, mouse.x, mouse.y);
-
-    //drawPoint(center, minMag*2, lineWeight/8, BLACKCORAL, false, null);
-
-    drawPoint(center, pointerSize, lineWeight, BLACKCORAL, true, "participant");
-    drawPoint(mouse, (pointerSize/2) * (1-dist), lineWeight * (1-dist), BLACKCORAL, false, "sound source");
-    popMatrix();
-
-    // draw gui
-    fill(255, 255, 255);
-    text("data: " + data, 20, 20);
-    text("dist: " + dist, 20, 40);
-    text("angle: " + angle, 20, 60);
-
-    // osc
-    sendOSC("/dist", dist);
-    sendOSC("/angle", angle);
+{
+	app.update();
+	app.draw();
 }
 
-void sendOSC(String oscMsg, float oscData)
+void mouseClicked()
 {
-    OscMessage msg = new OscMessage(oscMsg);
-    msg.add(oscData);
-    osc.send(msg, localhost);
-} 
+	clicks++;
+	app.scene.handleShush();
+}
 
-void drawPoint(PVector p, float diam, float weight, color col, boolean stroke, String id)
+class App
 {
-    if (stroke)
-    {
-        noStroke();
-        fill(col);
-    } 
-    else
-    {
-        noFill();
-        stroke(col);
-        strokeWeight(weight);
-    }
-    ellipse(p.x, p.y, diam, diam);
+	PApplet applet;
 
-    if (id != null) text(id, p.x+diam*0.67f, p.y-diam*0.67f);    
+	OscP5 osc;
+	NetAddress localhost;
+
+	Scene scene;
+
+	boolean shush = false;
+	public PVector mouse;
+
+	int data = 0;
+	int shushcount = 0;
+
+	int txtspacing = 16;
+	int defaultLineWeight = 8;
+	float defaultSize = 32.0f;
+
+	public App(PApplet applet)
+	{
+		this.applet = applet;
+
+		// osc communication
+		osc = new OscP5(this, 12000);
+		localhost = new NetAddress("localhost", 8000);
+
+		mouse = new PVector(mouseX, mouseY);
+		scene = new Scene(MAX_SOURCES);
+	}
+
+	void init()
+	{
+		scene.init();
+	}
+
+	void update()
+	{
+		mouse = new PVector(mouseX, mouseY);
+		scene.update();
+
+		// handle shush
+		if (shush)
+		{
+			scene.handleShush();
+			shushcount++;
+			shush = false;
+		}
+
+		// send osc
+		for (int i=0; i<scene.numSources; i++)
+		{
+			if (scene.sources[i].relocated) 
+			{
+				sendSourceOSC("/" + scene.sources[i].id,  scene.sources[i].dist, scene.sources[i].angle);
+				scene.sources[i].relocated = false;
+			}
+		}
+		OscMessage msg = new OscMessage("/actor");
+		msg.add(scene.actor.eyeAngle);
+		osc.send(msg, localhost);
+	}
+
+	void draw()
+	{
+		background(APRICOT);
+		scene.draw();
+
+		// gui
+		fill(BLACKCORAL);
+		text("shushes: " + shushcount, 20, 20);
+		text("angle: " + scene.actor.eyeAngle, 20, 20+txtspacing);
+	}
+
+	void sendSourceOSC(String id, float angle, float dist)
+	{
+		OscMessage msg = new OscMessage(id);
+		msg.add(angle);
+		msg.add(dist);
+		osc.send(msg, localhost);
+	} 
+
+	// events
+	void oscEvent(OscMessage msg) 
+	{
+		if (msg.addrPattern().equals("/shush"))
+		{
+			int content = msg.get(0).intValue();
+			shush = (content == 1);
+		}
+	}
+
+	void serialEvent(Serial p) 
+	{ 
+		data = (int)p.read();
+		println(data);
+	} 
 }
