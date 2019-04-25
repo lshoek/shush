@@ -9,6 +9,7 @@ class Scene
 
 	public int numSources;
 	float maxMagnitude;
+	float radius;
 
 	PVector zero;
 	PVector center;
@@ -23,19 +24,16 @@ class Scene
 
 	void init()
 	{
-		// vectors
+		refreshScreenDimensions();
 		zero = new PVector(0, 0);
-		center = new PVector(width/2, height/2);
 
 		// sources
 		for (int i=0; i<numSources; i++) 
-			sources[i] = new SoundSource(random(0, 1)*10.0f, app.defaultSize/8, i, this);
+			sources[i] = new SoundSource(i, this);
 	}
 
 	void update()
-	{
-		center = new PVector(width/2, height/2);
-		maxMagnitude = sqrt(width*width + height*height)/2;
+	{	
 		actor.update();
 
 		for (int i=0; i<numSources; i++) 
@@ -46,6 +44,10 @@ class Scene
 	{
 		pushMatrix();
 		translate(center.x, center.y);
+
+		noFill();
+		strokeWeight(app.defaultLineWeight/8);
+		ellipse(zero.x, zero.y, radius*2, radius*2);
 
 		for (int i=0; i<numSources; i++) 
 			sources[i].draw((sources[i].betweenBounds) ? WHITE : BLACKCORAL);
@@ -58,5 +60,12 @@ class Scene
 	{
 		for (int i=0; i<numSources; i++)
 			if (sources[i].betweenBounds) sources[i].relocate();
+	}
+
+	void refreshScreenDimensions()
+	{
+		center = new PVector(width/2, height/2);
+		radius = (width/2)*(15/16.0f);
+		maxMagnitude = sqrt(width*width + height*height)/2;
 	}
 }

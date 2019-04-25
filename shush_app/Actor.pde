@@ -9,8 +9,6 @@ class Actor
 	public float viewBoundRightAngle;
 	public float viewBoundLeftAngle;
 
-	float maxMagnitude;
-
 	Scene scene;
 
 	Serial port = null;
@@ -49,17 +47,14 @@ class Actor
 	{
 		// debug: driven by mouse
 		eyeDir = PVector.sub(app.mouse, scene.center);	
-		eyeDir.setMag(scene.maxMagnitude);
+		eyeDir.setMag(scene.radius);
+		eyeAngle = atan2(eyeDir.y, eyeDir.x);
 
-		eyeAngle = map(atan2(eyeDir.y, eyeDir.x), -PI, PI, 0, 1);
+		viewBoundRight = eyeDir.copy().rotate(-PI/4);
+		viewBoundLeft = eyeDir.copy().rotate(PI/4);
 
-		viewBoundRight = eyeDir.copy();
-		viewBoundLeft = eyeDir.copy();
-		viewBoundRight.rotate(-PI/4);
-		viewBoundLeft.rotate(PI/4);
-
-		viewBoundRightAngle = map(atan2(viewBoundRight.y, viewBoundRight.x), -PI, PI, 0, 1);
-		viewBoundLeftAngle = map(atan2(viewBoundLeft.y, viewBoundLeft.x), -PI, PI, 0, 1);
+		viewBoundRightAngle = atan2(viewBoundRight.y, viewBoundRight.x);
+		viewBoundLeftAngle = atan2(viewBoundLeft.y, viewBoundLeft.x);
 	}
 
 	void draw()

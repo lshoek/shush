@@ -1,22 +1,23 @@
 class SoundSource
 {
-	public PVector location;
-	public float range;
-	public float size;
-	public int id;
-
 	public float dist = 1.0f;
 	public float angle = 1.0f;
+
+	public int id;
 
 	public boolean betweenBounds = false;
 	public boolean relocated = true;
 
+	float oscillation;
+	float offset;
+
+	float absoluteDist = 1.0f;
+	float size = 8.0f;
+
 	Scene scene;
 
-	SoundSource(float range, float size, int id, Scene scene)
+	SoundSource(int id, Scene scene)
 	{
-		this.range = range;
-		this.size = size;
 		this.id = id;
 		this.scene = scene;
 		relocate();
@@ -24,11 +25,9 @@ class SoundSource
 
 	void update()
 	{
-		dist = dist(location.x, location.y, 0, 0);
-		dist = map(dist, 0, scene.maxMagnitude, 0, 1);
-
-		angle = atan2(location.y, location.x);
-		angle = map(angle, -PI, PI, 0, 1);
+		println(sin(millis()/1000.0f));
+		float oscillateDist = sin(millis()/1000.0f + offset) * oscillation;
+		dist = absoluteDist + oscillateDist;
 
 		betweenBounds = isBetweenBounds(scene.actor.viewBoundRightAngle, scene.actor.viewBoundLeftAngle);
 	}
@@ -39,6 +38,7 @@ class SoundSource
 		stroke(col);
 		strokeWeight(app.defaultLineWeight);
 
+		PVector location = new PVector(dist*cos(angle), dist*sin(angle));
 		ellipse(location.x, location.y, size, size);
 
 		fill(col);
@@ -69,7 +69,13 @@ class SoundSource
 
 	public void relocate()
 	{
-		location = new PVector(random(-1, 1)*(width/2), random(-1, 1)*(height/2));
+		absoluteDist = random(scene.radius/16, scene.radius);
+		dist = absoluteDist;
+		angle = random(-PI, PI);
+
+		offset = random(0, 1);
+		oscillation = random(15, 25);
+
 		relocated = true;
 	}
 }

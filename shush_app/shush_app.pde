@@ -85,14 +85,13 @@ class App
 		// send osc
 		for (int i=0; i<scene.numSources; i++)
 		{
-			if (scene.sources[i].relocated) 
-			{
-				sendSourceOSC("/" + scene.sources[i].id,  scene.sources[i].dist, scene.sources[i].angle);
-				scene.sources[i].relocated = false;
-			}
+			float normphi = map(scene.sources[i].angle, -PI, PI, 0, 1);
+			sendSourceOSC("/" + scene.sources[i].id,  scene.sources[i].dist, normphi);
+			scene.sources[i].relocated = false;
 		}
 		OscMessage msg = new OscMessage("/actor");
-		msg.add(scene.actor.eyeAngle);
+		float normphi = map(scene.actor.eyeAngle, -PI, PI, 0, 1);
+		msg.add(normphi);
 		osc.send(msg, localhost);
 	}
 
