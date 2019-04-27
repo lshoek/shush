@@ -1,4 +1,4 @@
-class Actor
+public class Actor
 {
 	public PVector eyeDir;
 	public float eyeAngle;
@@ -9,11 +9,16 @@ class Actor
 	public float viewBoundRightAngle;
 	public float viewBoundLeftAngle;
 
+	public float[] rawgyro;
+	public float[] rawacc;
+
+	public float pitch, roll, yaw;
+	float dt;
+
 	Scene scene;
 
-	Serial port = null;
-	int data = 0;
-	boolean arduinoAvailable = false;
+	public UDP udp;
+	String receivedFromUDP;
 
 	public Actor(Scene scene)
 	{
@@ -23,32 +28,23 @@ class Actor
 
 	void init()
 	{
-		// serial communication
-		String[] ports = Serial.list();
-		if (ports.length > 0)
-		{
-			String portname = "COM6";
-			boolean available = false;
+		rawgyro = new float[3];
+		rawacc = new float[3];
 
-			for (int i=0; i < ports.length; i++)
-			{
-				if (portname.equals(ports[i]))
-				{
-					port = new Serial(app.applet, portname, 38400);
-					println(portname);
-					available = true;
-				}
-			}
-			if (!available) println(portname + " busy or unavailable");
-		}
+		udp = new UDP(this, 5555); 
+		udp.listen(true);
+		dt = 1/60f;
 	}
 
 	void update()
 	{
 		// debug: driven by mouse
-		eyeDir = PVector.sub(app.mouse, scene.center);	
-		eyeDir.setMag(scene.radius);
-		eyeAngle = atan2(eyeDir.y, eyeDir.x);
+		//eyeDir = PVector.sub(app.mouse, scene.center);	
+		//eyeDir.setMag(scene.radius);
+		//eyeAngle = atan2(eyeDir.y, eyeDir.x);
+
+		eyeAngle = roll;
+		eyeDir = new PVector(scene.radius*cos(eyeAngle), scene.radius*sin(eyeAngle));
 
 		viewBoundRight = eyeDir.copy().rotate(-PI/4);
 		viewBoundLeft = eyeDir.copy().rotate(PI/4);
@@ -72,5 +68,25 @@ class Actor
 
 		fill(BLACKCORAL);
 		text("id:actor", p.x+app.defaultSize*0.5f, p.y-app.defaultSize*0.5f);  
+	}
+
+	//udp receive handling
+	void receive(byte[] data, String ip, int portRX)
+	{
+		// udp packet: [timestamp, 3, x, y, z, 4, x, y, z, 5, x, y, z]
+		// 3=accelerometer(m/s^2), 4=gyroscope(rad/s), 5=magnetometer(micro-Tesla uT)
+
+		String[] s = split(new String(data), ',');
+		for (int i=0; i<3; i++) rawacc[i] = float(s[i+2]);
+		for (int i=0; i<3; i++) rawgyro[i] = float(s[i+6]);
+
+		pitch += rawgyro[0] * dt;	// around x
+		roll += rawgyro[1] * dt;	// around y
+		yaw += rawgyro[2] * dt;		// around z
+	}
+
+	public void recalibrate()
+	{
+		roll = 0f;
 	}
 }

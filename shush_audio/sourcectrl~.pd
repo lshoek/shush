@@ -1,9 +1,9 @@
-#N canvas 1492 132 304 380 10;
+#N canvas 1044 92 579 632 10;
 #X obj 51 52 inlet;
 #X obj 51 124 bng 15 250 50 0 empty empty empty 17 7 0 10 -262144 -1
 -1;
 #X obj 51 290 tabplay~;
-#X obj 51 328 outlet~;
+#X obj 52 430 outlet~;
 #X obj 51 172 random;
 #X floatatom 168 93 12 0 0 0 - sumsamples-clip -;
 #X obj 130 114 -;
@@ -19,9 +19,23 @@
 #X obj 181 205 loadbang;
 #X msg 181 250 set \$1;
 #X obj 181 228 symbol \$1;
+#X obj 290 53 inlet;
+#X text 288 30 status;
+#X obj 290 299 line~;
+#X floatatom 290 353 5 0 0 0 - - -;
+#X obj 290 141 t b b;
+#X obj 290 82 select 1;
+#X msg 290 224 0 2000;
+#X msg 352 223 1 2000;
+#X obj 352 173 delay 2000;
+#X obj 290 326 observe 10;
+#X obj 51 361 *~ 1;
+#X obj 439 226 bng 15 250 50 0 empty empty empty 17 7 0 10 -262144
+-1 -1;
 #X connect 0 0 14 0;
 #X connect 1 0 4 0;
-#X connect 2 0 3 0;
+#X connect 2 0 29 0;
+#X connect 2 1 1 0;
 #X connect 4 0 9 0;
 #X connect 4 0 15 0;
 #X connect 5 0 6 1;
@@ -35,3 +49,15 @@
 #X connect 16 0 18 0;
 #X connect 17 0 2 0;
 #X connect 18 0 17 0;
+#X connect 19 0 24 0;
+#X connect 21 0 28 0;
+#X connect 21 0 29 1;
+#X connect 23 0 25 0;
+#X connect 23 1 27 0;
+#X connect 24 0 23 0;
+#X connect 25 0 21 0;
+#X connect 26 0 21 0;
+#X connect 27 0 26 0;
+#X connect 27 0 30 0;
+#X connect 28 0 22 0;
+#X connect 29 0 3 0;

@@ -26,8 +26,8 @@ class Scene
 	{
 		refreshScreenDimensions();
 		zero = new PVector(0, 0);
-
-		// sources
+		actor.init();
+		
 		for (int i=0; i<numSources; i++) 
 			sources[i] = new SoundSource(i, this);
 	}

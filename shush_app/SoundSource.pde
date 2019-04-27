@@ -25,9 +25,12 @@ class SoundSource
 
 	void update()
 	{
-		println(sin(millis()/1000.0f));
-		float oscillateDist = sin(millis()/1000.0f + offset) * oscillation;
+		float oscillateDist = sin(millis()/2000.0f + offset) * oscillation;
 		dist = absoluteDist + oscillateDist;
+
+		// debug soundsource
+		//dist = PVector.sub(app.mouse, scene.center).mag();
+		//angle = scene.actor.eyeAngle;
 
 		betweenBounds = isBetweenBounds(scene.actor.viewBoundRightAngle, scene.actor.viewBoundLeftAngle);
 	}
@@ -74,7 +77,7 @@ class SoundSource
 		angle = random(-PI, PI);
 
 		offset = random(0, 1);
-		oscillation = random(15, 25);
+		oscillation = random(15, 30);
 
 		relocated = true;
 	}

@@ -1,4 +1,5 @@
 import processing.serial.*;
+import hypermedia.net.*;
 import oscP5.*;
 import netP5.*;
 
@@ -29,8 +30,10 @@ void draw()
 
 void mouseClicked()
 {
-	clicks++;
-	app.scene.handleShush();
+	//clicks++;
+	//app.scene.handleShush();
+	
+	app.scene.actor.recalibrate();
 }
 
 class App
@@ -72,7 +75,6 @@ class App
 	void update()
 	{
 		mouse = new PVector(mouseX, mouseY);
-		scene.update();
 
 		// handle shush
 		if (shush)
@@ -81,12 +83,18 @@ class App
 			shushcount++;
 			shush = false;
 		}
+		scene.update();
 
 		// send osc
 		for (int i=0; i<scene.numSources; i++)
 		{
 			float normphi = map(scene.sources[i].angle, -PI, PI, 0, 1);
-			sendSourceOSC("/" + scene.sources[i].id,  scene.sources[i].dist, normphi);
+			float normdist = map(scene.sources[i].dist, 0, scene.radius, 0, 1);
+			normdist = constrain(normdist, 0, 1);
+
+			int status = (scene.sources[i].relocated) ? 1 : 0;
+
+			sendSourceOSC("/" + scene.sources[i].id,  normphi, normdist, status);
 			scene.sources[i].relocated = false;
 		}
 		OscMessage msg = new OscMessage("/actor");
@@ -106,11 +114,12 @@ class App
 		text("angle: " + scene.actor.eyeAngle, 20, 20+txtspacing);
 	}
 
-	void sendSourceOSC(String id, float angle, float dist)
+	void sendSourceOSC(String id, float angle, float dist, int status)
 	{
 		OscMessage msg = new OscMessage(id);
 		msg.add(angle);
 		msg.add(dist);
+		msg.add(status);
 		osc.send(msg, localhost);
 	} 
 
@@ -123,10 +132,4 @@ class App
 			shush = (content == 1);
 		}
 	}
-
-	void serialEvent(Serial p) 
-	{ 
-		data = (int)p.read();
-		println(data);
-	} 
 }
