@@ -59,7 +59,7 @@ class Scene
 	void handleShush()
 	{
 		for (int i=0; i<numSources; i++)
-			if (sources[i].betweenBounds) sources[i].relocate();
+			if (sources[i].betweenBounds) sources[i].handleShush();
 	}
 
 	void refreshScreenDimensions()

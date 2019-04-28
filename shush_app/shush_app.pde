@@ -7,7 +7,9 @@ final color APRICOT = #ffcdbc;
 final color BLACKCORAL = #69a197;
 final color WHITE = #ffffff;
 
-public final int MAX_SOURCES = 4;
+public int MAX_SOURCES = 4;
+public final boolean DEBUG = false;
+public final boolean DEBUG_SOUNDSOURCE = false;
 
 App app = new App(this);
 
@@ -30,10 +32,15 @@ void draw()
 
 void mouseClicked()
 {
-	//clicks++;
-	//app.scene.handleShush();
-	
-	app.scene.actor.recalibrate();
+	if (DEBUG)
+	{
+		clicks++;
+		app.scene.handleShush();
+	}
+	else
+	{
+		app.scene.actor.recalibrate();
+	}
 }
 
 class App
@@ -92,15 +99,11 @@ class App
 			float normdist = map(scene.sources[i].dist, 0, scene.radius, 0, 1);
 			normdist = constrain(normdist, 0, 1);
 
-			int status = (scene.sources[i].relocated) ? 1 : 0;
+			int status = (scene.sources[i].shushedAt) ? 1 : 0;
 
 			sendSourceOSC("/" + scene.sources[i].id,  normphi, normdist, status);
-			scene.sources[i].relocated = false;
+			scene.sources[i].shushedAt = false;
 		}
-		OscMessage msg = new OscMessage("/actor");
-		float normphi = map(scene.actor.eyeAngle, -PI, PI, 0, 1);
-		msg.add(normphi);
-		osc.send(msg, localhost);
 	}
 
 	void draw()
@@ -126,10 +129,13 @@ class App
 	// events
 	void oscEvent(OscMessage msg) 
 	{
-		if (msg.addrPattern().equals("/shush"))
+		if (!DEBUG)
 		{
-			int content = msg.get(0).intValue();
-			shush = (content == 1);
+			if (msg.addrPattern().equals("/shush"))
+			{
+				int content = msg.get(0).intValue();
+				shush = (content == 1);
+			}
 		}
 	}
 }

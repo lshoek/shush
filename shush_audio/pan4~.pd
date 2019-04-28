@@ -26,14 +26,15 @@
 #X obj 303 307 *~;
 #X obj 387 304 *~;
 #X obj 518 40 inlet;
-#X obj 518 197 - 1;
-#X obj 518 224 abs;
+#X obj 518 175 - 1;
+#X obj 518 202 abs;
 #X floatatom 518 251 5 0 0 0 - - -;
 #X obj 146 92 *~ 1;
 #X obj 260 61 wrap;
 #X text 262 13 angle correction;
 #X floatatom 260 87 5 0 0 0 - - -;
 #X obj 260 36 - 0.125;
+#X obj 518 226 scale 0 1 0.05 1;
 #X connect 0 0 16 0;
 #X connect 1 0 17 0;
 #X connect 2 0 1 0;
@@ -61,7 +62,7 @@
 #X connect 25 0 13 0;
 #X connect 26 0 27 0;
 #X connect 27 0 28 0;
-#X connect 28 0 29 0;
+#X connect 28 0 35 0;
 #X connect 29 0 25 1;
 #X connect 29 0 24 1;
 #X connect 29 0 23 1;
@@ -73,3 +74,4 @@
 #X connect 31 0 33 0;
 #X connect 33 0 21 0;
 #X connect 34 0 31 0;
+#X connect 35 0 29 0;

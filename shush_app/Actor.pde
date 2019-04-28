@@ -38,14 +38,17 @@ public class Actor
 
 	void update()
 	{
-		// debug: driven by mouse
-		//eyeDir = PVector.sub(app.mouse, scene.center);	
-		//eyeDir.setMag(scene.radius);
-		//eyeAngle = atan2(eyeDir.y, eyeDir.x);
-
-		eyeAngle = roll;
-		eyeDir = new PVector(scene.radius*cos(eyeAngle), scene.radius*sin(eyeAngle));
-
+		if (DEBUG)
+		{
+			eyeDir = PVector.sub(app.mouse, scene.center);	
+			eyeDir.setMag(scene.radius);
+			eyeAngle = atan2(eyeDir.y, eyeDir.x);
+		}
+		else
+		{
+			eyeAngle = roll;
+			eyeDir = new PVector(scene.radius*cos(eyeAngle), scene.radius*sin(eyeAngle));
+		}
 		viewBoundRight = eyeDir.copy().rotate(-PI/4);
 		viewBoundLeft = eyeDir.copy().rotate(PI/4);
 
