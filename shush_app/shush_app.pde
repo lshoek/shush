@@ -1,3 +1,5 @@
+import java.net.InetAddress; 
+import java.net.UnknownHostException; 
 import processing.serial.*;
 import hypermedia.net.*;
 import oscP5.*;
@@ -11,9 +13,10 @@ public int MAX_SOURCES = 4;
 public final boolean DEBUG = false;
 public final boolean DEBUG_SOUNDSOURCE = false;
 
-App app = new App(this);
-
+String ip;
 int clicks = 0;
+
+App app = new App(this);
 
 void setup()
 {
@@ -49,14 +52,12 @@ class App
 
 	OscP5 osc;
 	NetAddress localhost;
+	NetAddress hostaddress;
 
 	Scene scene;
 
 	boolean shush = false;
 	public PVector mouse;
-
-	int data = 0;
-	int shushcount = 0;
 
 	int txtspacing = 16;
 	int defaultLineWeight = 8;
@@ -72,6 +73,7 @@ class App
 
 		mouse = new PVector(mouseX, mouseY);
 		scene = new Scene(MAX_SOURCES);
+		try { ip = split(InetAddress.getLocalHost().toString(), '/')[1]; } catch (UnknownHostException e) {} 
 	}
 
 	void init()
@@ -87,7 +89,6 @@ class App
 		if (shush)
 		{
 			scene.handleShush();
-			shushcount++;
 			shush = false;
 		}
 		scene.update();
@@ -113,7 +114,7 @@ class App
 
 		// gui
 		fill(BLACKCORAL);
-		text("shushes: " + shushcount, 20, 20);
+		text("ip: " + ip, 20, 20);
 		text("angle: " + scene.actor.eyeAngle, 20, 20+txtspacing);
 	}
 
