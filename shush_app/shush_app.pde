@@ -137,15 +137,18 @@ class App
 
 		// gui
 		fill(BLACKCORAL);
-		text("ip: " + ip, 20, 20);
-		text("debugsound: " + DEBUG_SOUNDSOURCE, 20, 20+txtspacing);
-		text("debugactor: " + DEBUG_ACTOR, 20, 20+txtspacing*2);
-		text("angle: " + scene.actor.eyeAngle, 20, 20+txtspacing*3);
+		text("shush v0.9 -- lesley van hoek", 20, 20);
+		text("ip: " + ip, 20, 20+txtspacing*1);
+
+		text("debugsound: " + DEBUG_SOUNDSOURCE, 20, 20+txtspacing*2);
+		text("debugactor: " + DEBUG_ACTOR, 20, 20+txtspacing*3);
 		for (int i=0; i<MAX_SOURCES; i++)
 		{
 			text(scene.sources[i].id + ": " + scene.sources[i].active, 20, 
 				20+txtspacing*4+txtspacing*i);
 		}
+		text("[x] toggle soundsource debugging", 20, height-txtspacing*2);
+		text("[0-9] toggle soundsource activity", 20, height-txtspacing);
 	}
 
 	void sendSourceOSC(String id, float angle, float dist, int status)
