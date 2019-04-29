@@ -62,7 +62,7 @@ void keyPressed()
 
 	// 0-9
 	int k = key-48;
-	if (k<MAX_SOURCES) 
+	if (k<MAX_SOURCES && k>=0) 
 		app.scene.sources[k].active = !app.scene.sources[k].active;
 }
 
