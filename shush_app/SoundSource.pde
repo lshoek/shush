@@ -5,6 +5,7 @@ class SoundSource
 
 	public int id;
 
+	public boolean active = true;
 	public boolean betweenBounds = false;
 	boolean shushedAt = false;
 
@@ -62,26 +63,31 @@ class SoundSource
 		}
 		if (DEBUG_SOUNDSOURCE)
 		{
+			PVector mouseDir = PVector.sub(app.mouse, scene.center);
+			mouseDir.setMag(scene.radius);
 			dist = PVector.sub(app.mouse, scene.center).mag();
-			angle = scene.actor.eyeAngle;
+			angle = atan2(mouseDir.y, mouseDir.x);
 		}
 		betweenBounds = isBetweenBounds(scene.actor.viewBoundRightAngle, scene.actor.viewBoundLeftAngle);
 	}
 
 	void draw(color col)
 	{
-		noFill();
-		stroke(col);
-		strokeWeight(app.defaultLineWeight);
+		if (active)
+		{
+			noFill();
+			stroke(col);
+			strokeWeight(app.defaultLineWeight);
 
-		float rec = (recovering) ? 0.5f : 1.0f;
-		PVector location = new PVector(dist*cos(angle), dist*sin(angle));
-		ellipse(location.x, location.y, size*rec, size*rec);
+			float rec = (recovering) ? 0.5f : 1.0f;
+			PVector location = new PVector(dist*cos(angle), dist*sin(angle));
+			ellipse(location.x, location.y, size*rec, size*rec);
 
-		text("id:source" + id, location.x+size*3.0f, location.y-size);
-		text("angle:" + angle, location.x+size*3.0f, location.y-size+app.txtspacing);
-		text("dist:" + dist, location.x+size*3.0f, location.y-size+app.txtspacing*2);
-		text("behavior:" + behavior, location.x+size*3.0f, location.y-size+app.txtspacing*3);
+			text("id:source" + id, location.x+size*3.0f, location.y-size);
+			text("angle:" + angle, location.x+size*3.0f, location.y-size+app.txtspacing);
+			text("dist:" + dist, location.x+size*3.0f, location.y-size+app.txtspacing*2);
+			text("behavior:" + behavior, location.x+size*3.0f, location.y-size+app.txtspacing*3);
+		}
 	}
 
 	boolean isBetweenBounds(float left, float right)

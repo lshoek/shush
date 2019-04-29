@@ -19,6 +19,7 @@ public class Actor
 
 	public UDP udp;
 	String receivedFromUDP;
+	boolean firstPacket = true;
 
 	public Actor(Scene scene)
 	{
@@ -38,7 +39,7 @@ public class Actor
 
 	void update()
 	{
-		if (DEBUG)
+		if (DEBUG_ACTOR)
 		{
 			eyeDir = PVector.sub(app.mouse, scene.center);	
 			eyeDir.setMag(scene.radius);
@@ -76,16 +77,25 @@ public class Actor
 	//udp receive handling
 	void receive(byte[] data, String ip, int portRX)
 	{
-		// udp packet: [timestamp, 3, x, y, z, 4, x, y, z, 5, x, y, z]
-		// 3=accelerometer(m/s^2), 4=gyroscope(rad/s), 5=magnetometer(micro-Tesla uT)
+		// discard buffer the first time
+		if (firstPacket)
+		{
+			firstPacket = false;
+			return;
+		}
 
+		// udp packet: [timestamp, 3, x, y, z, 4, x, y, z]
+		// 3=accelerometer(m/s^2), 4=gyroscope(rad/s)
 		String[] s = split(new String(data), ',');
-		for (int i=0; i<3; i++) rawacc[i] = float(s[i+2]);
-		for (int i=0; i<3; i++) rawgyro[i] = float(s[i+6]);
+		if (trim(s[1]).equals("3") && trim(s[5]).equals("4"))
+		{
+			for (int i=0; i<3; i++) rawacc[i] = float(s[i+2]);
+			for (int i=0; i<3; i++) rawgyro[i] = float(s[i+6]);
 
-		pitch += rawgyro[0] * dt;	// around x
-		roll += rawgyro[1] * dt;	// around y
-		yaw += rawgyro[2] * dt;		// around z
+			pitch += rawgyro[0] * dt;	// around x
+			roll += rawgyro[1] * dt;	// around y
+			yaw += rawgyro[2] * dt;		// around z
+		}
 	}
 
 	public void recalibrate()

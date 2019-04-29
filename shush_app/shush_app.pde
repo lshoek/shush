@@ -9,9 +9,14 @@ final color APRICOT = #ffcdbc;
 final color BLACKCORAL = #69a197;
 final color WHITE = #ffffff;
 
+// number of sound sources
 public int MAX_SOURCES = 4;
-public final boolean DEBUG = false;
-public final boolean DEBUG_SOUNDSOURCE = false;
+
+// debug shush range
+public boolean DEBUG_ACTOR = false;
+
+// calibration
+public boolean DEBUG_SOUNDSOURCE = false;
 
 String ip;
 int clicks = 0;
@@ -35,7 +40,7 @@ void draw()
 
 void mouseClicked()
 {
-	if (DEBUG)
+	if (DEBUG_ACTOR)
 	{
 		clicks++;
 		app.scene.handleShush();
@@ -44,6 +49,21 @@ void mouseClicked()
 	{
 		app.scene.actor.recalibrate();
 	}
+}
+
+void keyPressed() 
+{
+	// x
+	if (key == 120)
+	{ 
+		DEBUG_SOUNDSOURCE = !DEBUG_SOUNDSOURCE;
+		return;
+	}
+
+	// 0-9
+	int k = key-48;
+	if (k<MAX_SOURCES) 
+		app.scene.sources[k].active = !app.scene.sources[k].active;
 }
 
 class App
@@ -100,8 +120,11 @@ class App
 			float normdist = map(scene.sources[i].dist, 0, scene.radius, 0, 1);
 			normdist = constrain(normdist, 0, 1);
 
-			int status = (scene.sources[i].shushedAt) ? 1 : 0;
-
+			int status = -1;
+			if (scene.sources[i].active)
+			{
+				status = (scene.sources[i].shushedAt) ? 1 : 0;
+			}
 			sendSourceOSC("/" + scene.sources[i].id,  normphi, normdist, status);
 			scene.sources[i].shushedAt = false;
 		}
@@ -115,7 +138,14 @@ class App
 		// gui
 		fill(BLACKCORAL);
 		text("ip: " + ip, 20, 20);
-		text("angle: " + scene.actor.eyeAngle, 20, 20+txtspacing);
+		text("debugsound: " + DEBUG_SOUNDSOURCE, 20, 20+txtspacing);
+		text("debugactor: " + DEBUG_ACTOR, 20, 20+txtspacing*2);
+		text("angle: " + scene.actor.eyeAngle, 20, 20+txtspacing*3);
+		for (int i=0; i<MAX_SOURCES; i++)
+		{
+			text(scene.sources[i].id + ": " + scene.sources[i].active, 20, 
+				20+txtspacing*4+txtspacing*i);
+		}
 	}
 
 	void sendSourceOSC(String id, float angle, float dist, int status)
@@ -130,7 +160,7 @@ class App
 	// events
 	void oscEvent(OscMessage msg) 
 	{
-		if (!DEBUG)
+		if (!DEBUG_ACTOR)
 		{
 			if (msg.addrPattern().equals("/shush"))
 			{
